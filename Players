@@ -1,0 +1,153 @@
+import java.util.Arrays;
+import java.util.Random;
+
+public class Players {
+    private String[] hand;
+    private int totalScore;
+    private String[] table;
+    private String[] hand2;
+
+    public Players() {
+        hand = new String[9];
+        totalScore = 0;
+        table = new String[5];
+        hand2 = new String[9];
+    }
+
+    public String[] getHand() {
+        return hand;
+    }
+
+    public void drawCard(Decks gameDeck) {
+        String drawnCard = gameDeck.drawCard();
+        addToHand(drawnCard);
+        System.out.println("Çekilen kart: " + drawnCard);
+    }
+
+    public void placeCardOnTable(int index) {
+        if (index < 0 || index >= hand.length || hand[index] == null) {
+            System.out.println("Geçersiz bir kart seçtiniz.");
+        } else {
+            addToTable(hand[index]);
+            System.out.println("Masaya koyulan kart: " + hand[index]);
+            removeFromHand(index);
+        }
+    }
+
+    public void endTurn() {
+        // Turu bitir, gerekirse ekstra kontrolleri burada ekleyebilirsiniz
+    }
+
+    public void addToHand(String card) {
+        for (int i = 0; i < hand.length; i++) {
+            if (hand[i] == null) {
+                hand[i] = card;
+                break;
+            }
+        }
+    }
+
+    public void removeFromHand(int index) {
+        if (index >= 0 && index < hand.length) {
+            hand[index] = null;
+        }
+    }
+
+    public void printHandWithIndices() {
+        System.out.print("Oyuncu eli: [");
+        for (int i = 0; i < hand.length; i++) {
+            if (hand[i] != null) {
+                System.out.print((i + 1) + " ");
+            } else {
+                System.out.print("null ");
+            }
+        }
+        System.out.println("]");
+    }
+
+    public String[] getHand2() {
+        return hand2;
+    }
+
+    public void addToHand2(String card) {
+        for (int i = 0; i < hand2.length; i++) {
+            if (hand2[i] == null) {
+                hand2[i] = card;
+                break;
+            }
+        }
+    }
+
+    public void playRandomCard(Decks gameDeck) {
+        Random rand = new Random();
+        int randomIndex = rand.nextInt(hand.length);
+        placeCardOnTable(randomIndex);
+        drawCard(gameDeck);
+    }
+
+
+    public void printTable() {
+        System.out.println("Masadaki kartlar: " + Arrays.toString(table));
+    }
+
+    public void addToTable(String card) {
+        for (int i = 0; i < table.length; i++) {
+            if (table[i] == null) {
+                table[i] = card;
+                break;
+            }
+        }
+    }
+
+    public void compareTable(Players opponent) {
+        int playerTotal = calculateTotal(table);
+        int opponentTotal = calculateTotal(opponent.table);
+
+        System.out.println("Oyuncu masası: " + Arrays.toString(table));
+        System.out.println("Bilgisayar masası: " + Arrays.toString(opponent.table));
+
+        if (playerTotal > 20 || (playerTotal > opponentTotal && opponentTotal <= 20)) {
+            System.out.println("Oyuncu bu raundu kazandı!");
+            totalScore++;
+        } else if (opponentTotal > 20 || (opponentTotal > playerTotal && playerTotal <= 20)) {
+            System.out.println("Bilgisayar bu raundu kazandı!");
+            opponent.addToTotalScore(1);
+        } else {
+            System.out.println("Bu raund berabere!");
+        }
+
+        Arrays.fill(table, null);
+    }
+
+    public void addToTotalScore(int value) {
+        totalScore += value;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    private int calculateTotal(String[] cards) {
+        int total = 0;
+        for (String card : cards) {
+            if (card != null) {
+                String[] parts = card.split(" ");
+                int value = Integer.parseInt(parts[0]);
+                total += value;
+            }
+        }
+        return total;
+    }
+
+    public void computer(Decks gameDeck) {
+        int total = calculateTotal(hand2);
+
+        while (total <= 16) {
+            String drawnCard = gameDeck.drawCard();
+            addToHand2(drawnCard);
+            total = calculateTotal(hand2);
+        }
+
+        System.out.println("Bilgisayar eli: " + Arrays.toString(hand2));
+    }
+}
