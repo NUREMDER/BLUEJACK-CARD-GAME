@@ -1,0 +1,88 @@
+import java.util.Arrays;
+import java.util.Scanner;
+
+public class Game {
+
+    public static void main(String[] args) {
+        // Oyunu başlat
+        startGame();
+    }
+
+    public static void startGame() {
+        // Oyun başlatıldığında burada gerekli nesneleri oluşturabilirsiniz
+        Decks decks = new Decks();
+        Players player = new Players();
+        Players computer = new Players();
+
+        // Oyuncu ve bilgisayarın ilk beş kartını al
+        for (int i = 0; i < 4; i++) {
+            player.addToHand(decks.drawCard()); // drawCard metodunu çağırmada parametre kullanmıyoruz
+            computer.addToHand2(decks.drawCard());
+        }
+
+
+        // Oyuncu ve bilgisayarın elini yazdır
+        System.out.println("Oyuncu eli: " + Arrays.toString(player.getHand()));
+        System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
+
+        // Oyun döngüsü
+        while (true) {
+            // Oyuncunun turu
+            playerTurn(player, computer, decks);
+
+            // Bilgisayarın turu
+            computerTurn(computer, decks);
+
+            // Oyun durumu kontrolü
+            if (checkGameStatus(player, computer, decks)) {
+                break;
+            }
+        }
+    }
+
+    public static void playerTurn(Players player, Players computer, Decks decks) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("\nOyuncunun sırası:");
+        System.out.println("1 - Kart çek");
+        System.out.println("2 - Turu bitir");
+
+        int choice = scanner.nextInt();
+
+        switch (choice) {
+            case 1:
+                player.drawCard(decks);
+                player.printHandWithIndices();
+                break;
+            case 2:
+                player.endTurn();
+                break;
+            default:
+                System.out.println("Geçersiz seçenek!");
+        }
+    }
+
+    public static void computerTurn(Players computer, Decks decks) {
+        System.out.println("\nBilgisayarın sırası:");
+
+        // Bilgisayarın stratejisini burada uygulayabilirsiniz
+        computer.computer(decks);
+
+        // Bilgisayar turunu bitir
+    }
+
+    public static boolean checkGameStatus(Players player, Players computer, Decks decks) {
+        // Oyunun durumunu kontrol et (örneğin, bir oyuncu 3 raundı kazanırsa veya bir oyuncu Bluejack yaparsa)
+        if (player.getTotalScore() >= 3) {
+            System.out.println("Oyuncu oyunu kazandı!");
+            return true;
+        } else if (computer.getTotalScore() >= 3) {
+            System.out.println("Bilgisayar oyunu kazandı!");
+            return true;
+        } else if (decks.getRemainingCards() == 0) {
+            System.out.println("Oyun berabere bitti!");
+            return true;
+        }
+        return false;
+    }
+}
