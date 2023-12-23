@@ -1,32 +1,48 @@
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Scanner;
 
 public class Players {
     private String[] hand;
-    private int totalScore;
+    public int totalScore;
+    public int totalScore2;
     private String[] table;
     private String[] hand2;
+    private String[] table2;
 
     public Players() {
         hand = new String[9];
         totalScore = 0;
         table = new String[5];
         hand2 = new String[9];
+        table2= new String[5];
     }
 
     public String[] getHand() {
         return hand;
     }
 
-    public void drawCard(Decks gameDeck) {
-        String drawnCard = gameDeck.drawCard();
-        addToHand(drawnCard);
-        System.out.println("Çekilen kart: " + drawnCard);
-    }
-
     public void placeCardOnTable(int index) {
         if (index < 0 || index >= hand.length || hand[index] == null) {
             System.out.println("Geçersiz bir kart seçtiniz.");
+            while (true) {
+                try {
+                    System.out.println("Lütfen geçerli bir kart seçin:");
+                    Scanner sc = new Scanner(System.in);
+                    int newIndex = sc.nextInt();
+
+                    // Yeni seçilen kartın geçerli olup olmadığını kontrol et
+                    if (newIndex >= 1 && newIndex <= hand.length && hand[newIndex - 1] != null) {
+                        addToTable(hand[newIndex - 1]);
+                        System.out.println("Masaya koyulan kart: " + hand[newIndex - 1]);
+                        removeFromHand(newIndex - 1);
+                        break; // Geçerli bir kart seçildiği için döngüyü sonlandır
+                    } else {
+                        System.out.println("Hata: Geçerli bir kart seçiniz.");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Hata: Geçerli bir sayı giriniz.");
+                }
+            }
         } else {
             addToTable(hand[index]);
             System.out.println("Masaya koyulan kart: " + hand[index]);
@@ -34,7 +50,7 @@ public class Players {
         }
     }
 
-    public void endTurn() {
+    public void endSet() {
         // Turu bitir, gerekirse ekstra kontrolleri burada ekleyebilirsiniz
     }
 
@@ -78,18 +94,6 @@ public class Players {
         }
     }
 
-    public void playRandomCard(Decks gameDeck) {
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(hand.length);
-        placeCardOnTable(randomIndex);
-        drawCard(gameDeck);
-    }
-
-
-    public void printTable() {
-        System.out.println("Masadaki kartlar: " + Arrays.toString(table));
-    }
-
     public void addToTable(String card) {
         for (int i = 0; i < table.length; i++) {
             if (table[i] == null) {
@@ -98,56 +102,66 @@ public class Players {
             }
         }
     }
+    public void addToTable2(String card) {
+        for (int i = 0; i < table2.length; i++) {
+            if (table2[i] == null) {
+                table2[i] = card;
+                break;
+            }
+        }
+    }
 
-    public void compareTable(Players opponent) {
+    public void compareTable(Players computer) {
         int playerTotal = calculateTotal(table);
-        int opponentTotal = calculateTotal(opponent.table);
+        int computerTotal = calculateTotal(computer.getTable2());
 
         System.out.println("Oyuncu masası: " + Arrays.toString(table));
-        System.out.println("Bilgisayar masası: " + Arrays.toString(opponent.table));
+        System.out.println("Bilgisayar masası: " + Arrays.toString(computer.getTable2()));
 
-        if (playerTotal > 20 || (playerTotal > opponentTotal && opponentTotal <= 20)) {
-            System.out.println("Oyuncu bu raundu kazandı!");
+
+        if (playerTotal > computerTotal && playerTotal <= 20) {
+            System.out.println("Oyuncu bu seti kazandı!");
             totalScore++;
-        } else if (opponentTotal > 20 || (opponentTotal > playerTotal && playerTotal <= 20)) {
-            System.out.println("Bilgisayar bu raundu kazandı!");
-            opponent.addToTotalScore(1);
+        } else if (computerTotal > playerTotal && computerTotal <= 20) {
+            System.out.println("Bilgisayar bu seti kazandı!");
+            totalScore2++;
         } else {
-            System.out.println("Bu raund berabere!");
+            System.out.println("Bu set berabere!");
         }
+      }
 
-        Arrays.fill(table, null);
+
+    public String[] getTable2() {
+        return table2;
     }
 
-    public void addToTotalScore(int value) {
-        totalScore += value;
-    }
-
-    public int getTotalScore() {
-        return totalScore;
-    }
 
     private int calculateTotal(String[] cards) {
         int total = 0;
         for (String card : cards) {
             if (card != null) {
-                String[] parts = card.split(" ");
-                int value = Integer.parseInt(parts[0]);
+                // Kartın içindeki işareti temizle
+                String valueString = card.replaceAll("[^0-9-]", "");
+                int value = Integer.parseInt(valueString);
                 total += value;
             }
         }
         return total;
     }
 
+
     public void computer(Decks gameDeck) {
         int total = calculateTotal(hand2);
 
         while (total <= 16) {
             String drawnCard = gameDeck.drawCard();
-            addToHand2(drawnCard);
+            addToTable2(drawnCard);
             total = calculateTotal(hand2);
         }
 
         System.out.println("Bilgisayar eli: " + Arrays.toString(hand2));
+        // Bilgisayar turunu bitir
+        endSet();
+
     }
 }
