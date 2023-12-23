@@ -1,6 +1,3 @@
-/*My project will probably consist of 4 classes. and there is the first class right now. 
-Sometimes I may change something in my code because this project requires a process and the process may change.*/
-
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -14,36 +11,111 @@ public class GameController {
     public static final String FLIP_CARD = "+/-";
     public static final String DOUBLE_CARD = "x2";
 
+
     public static void main(String[] args) {
         Decks decks = new Decks();
         Scanner sc = new Scanner(System.in);
 
-
-        for (int i = 0; i < 40; i++) {
-            String drawnCard = decks.drawCard();
-            if (drawnCard != null) {
-                System.out.println(drawnCard);
-            } else {
-                System.out.println("Destede kart kalmadı!");
-            }
-        }
-        Decks d = new Decks();
+        // Oyuncu ve bilgisayarın ilk beş kartını al
         Players player = new Players();
         Players computer = new Players();
+        dealInitialHands(decks, player, computer);
 
-        // Oyuncu ve bilgisayarın ilk beş kartını al
-        for (int i = 0; i < 4; i++) {
-            player.addToHand(d.drawCard());
-            computer.addToHand2(d.drawCard());
-        }
-
-        Players players = new Players();
         // Oyuncu ve bilgisayarın elini yazdır
         System.out.println("Oyuncu eli: " + Arrays.toString(player.getHand()));
         System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
 
+        // Oyun döngüsü
+        while (true) {
+            // Oyuncunun sırası
+            playerTurn(decks, player, computer, sc);
 
+            // Bilgisayarın sırası
+            computerTurn(decks, player, computer);
 
+            // Masadaki kartları karşılaştır
+            player.compareTable(computer);
+
+            // Oyuncu ve bilgisayarın elini yazdır
+            System.out.println("Oyuncu eli: " + Arrays.toString(player.getHand()));
+            System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
+
+            // Oyun kontrolü
+            if (checkGameResult(player, computer)) {
+                break;
+            }
+        }
     }
 
+    private static void dealInitialHands(Decks decks, Players player, Players computer) {
+        for (int i = 0; i < 4; i++) {
+            player.addToHand(decks.drawCard());
+            computer.addToHand2(decks.drawCard());
+        }
+    }
+
+    private static void playerTurn(Decks decks, Players player, Players computer, Scanner sc) {
+        System.out.println("Oyuncunun sırası!");
+        System.out.println("0 - Kart çek");
+        System.out.println("1 - Kart oyna");
+        System.out.println("2 - Seti bitir");
+
+        int choice = sc.nextInt();
+        sc.nextLine(); // Buffer temizleme
+
+        switch (choice) {
+            case 0:
+                String drawnCard = decks.drawCard();
+                if (drawnCard != null) {
+                    System.out.println("Çekilen kart: " + drawnCard);
+                    player.addToHand(drawnCard);
+                } else {
+                    System.out.println("Destede kart kalmadı!");
+                }
+                break;
+            case 1:
+                player.printHandWithIndices();
+                System.out.println("Hangi kartı oynamak istiyorsunuz?");
+                int cardIndex = sc.nextInt();
+                player.placeCardOnTable(cardIndex - 1);
+                break;
+            case 2:
+                System.out.println("Seti bitir!");
+
+                // Masadaki kartları karşılaştır
+                player.compareTable(computer);
+                break;
+            default:
+                System.out.println("Geçersiz seçim!");
+                break;
+        }
+    }
+
+    private static void computerTurn(Decks decks, Players player, Players computer) {
+        System.out.println("Bilgisayarın sırası!");
+
+        // Bilgisayarın elinden bir kartı masaya koymasını sağla
+        String drawnCard = decks.drawCard();
+        if (drawnCard != null) {
+            System.out.println("Bilgisayar masaya kart koydu: " + drawnCard);
+            computer.addToTable2(drawnCard);
+        } else {
+            System.out.println("Destede kart kalmadı!");
+        }
+
+        // Masadaki kartları karşılaştır
+        //computer.compareTable(player);
+    }
+
+
+    private static boolean checkGameResult(Players player, Players computer) {
+        if (player.totalScore == 3) {
+            System.out.println("Oyuncu oyunu kazandı!");
+            return true;
+        } else if (computer.totalScore2== 3) {
+            System.out.println("Bilgisayar oyunu kazandı!");
+            return true;
+        }
+        return false;
+    }
 }
