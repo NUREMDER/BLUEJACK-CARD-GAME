@@ -8,24 +8,33 @@ public class Decks {
     }
 
     private void initializeDeck() {
-        String[] colors = {deneme72.MAVI, deneme72.SARI, deneme72.KIRMIZI, deneme72.YESIL};
+        String[] colors = {GameController.MAVI, GameController.SARI, GameController.KIRMIZI, GameController.YESIL};
         String[] numbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
 
-        cards = new String[colors.length * numbers.length];
+        cards = new String[colors.length * numbers.length + 6]; // Ekstra 6 kart eklendi
 
         int index = 0;
         for (int i = 0; i < colors.length; i++) {
             for (int j = 0; j < numbers.length; j++) {
-                cards[index++] = numbers[j] + colors[i];
+                String card = numbers[j] + colors[i];
+                card = addRandomSign(card);
+                cards[index++] = card;
             }
         }
 
-        shuffle(cards);
+        // Ekstra kartlar ekleniyor
+        cards[index++] = GameController.FLIP_CARD;
+        cards[index++] = GameController.FLIP_CARD;
+        cards[index++] = GameController.DOUBLE_CARD;
+        cards[index++] = GameController.DOUBLE_CARD;
 
+        shuffle(cards);
     }
 
-    public String[] getCards() {
-        return cards;
+    private String addRandomSign(String card) {
+        // Randomly choose between + and -
+        String sign = (Math.random() < 0.5) ? "+" : "-";
+        return sign + card;
     }
 
     public String drawCard() {
@@ -33,23 +42,21 @@ public class Decks {
             String drawnCard = cards[0];
 
             String[] newCards = new String[cards.length - 1];
-            for (int i = 1; i < cards.length; i++) {
-                newCards[i - 1] = cards[i];
-            }
+            System.arraycopy(cards, 1, newCards, 0, newCards.length);
 
             cards = newCards;
-            return drawnCard;
+
+            return drawnCard.charAt(0) + drawnCard.substring(1);
         } else {
             return null;
         }
     }
 
-
     private void shuffle(String[] cards) {
         Random rand = new Random();
+
         for (int i = 0; i < cards.length; i++) {
             int randomIndex = rand.nextInt(cards.length);
-
             String temp = cards[i];
             cards[i] = cards[randomIndex];
             cards[randomIndex] = temp;
