@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 
 public class GameController {
@@ -14,105 +15,148 @@ public class GameController {
 
     public static void main(String[] args) {
         Decks decks = new Decks();
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
         // Oyuncu ve bilgisayarın ilk beş kartını al
         Players player = new Players();
         Players computer = new Players();
+
         dealInitialHands(decks, player, computer);
 
         // Oyuncu ve bilgisayarın elini yazdır
         System.out.println("Oyuncu eli: " + Arrays.toString(player.getHand()));
-        System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
+        //System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
+        //bilgisayar elini deneme amaçlı görmek istediğim için açmıştım. Gizledim.
+        int userChoice;
 
-        // Oyun döngüsü
-        while (true) {
-            // Oyuncunun sırası
-            playerTurn(decks, player, computer, sc);
+        // Oyunumun döngüsü
+        boolean gameIsRunning = true;
 
-            // Bilgisayarın sırası
-            computerTurn(decks, player, computer);
+        while (gameIsRunning) {
 
-            // Masadaki kartları karşılaştır
-            player.compareTable(computer);
+            userChoice = playerTurn(decks, player, computer, scanner);// Oyuncunun sırası
+
+            computerTurn(decks, player, computer);// Bilgisayarın sırası
+
+            // Masadaki kartları karşılaştırmak için compareTable metoduna geçiş.
+            player.compareTable(computer, userChoice);
 
             // Oyuncu ve bilgisayarın elini yazdır
             System.out.println("Oyuncu eli: " + Arrays.toString(player.getHand()));
-            System.out.println("Bilgisayar eli: " + Arrays.toString(computer.getHand2()));
 
-            // Oyun kontrolü
-            if (checkGameResult(player, computer)) {
-                break;
-            }
+            // Oyunun kontrolü
+            gameIsRunning = !checkGameResult(player, computer);
         }
+
+
+        //dealInitialHands(decks, player, computer);--> deneme amaçlı açtım. Gizledim
+
+
+        // Yeniden tüm kartları karıştırıp ve oyunculara dağıtma
+        decks.reshuffleCards();
+        dealInitialHands(decks, player, computer);
     }
 
+
     private static void dealInitialHands(Decks decks, Players player, Players computer) {
+        // Oyun bittiğinde yeni tur başlatmak için endSet ile masa temizleme
+        player.endSet();
+        computer.endSet();
+
+        // Oyuncu ve bilgisayarın ilk 4 kartını almasını sağlama
+        for (int i = 0; i < 4; i++) {
+            player.addToHand(decks.drawCard());
+            computer.addToHand2(decks.drawCard());
+        }
+        player.resetHand();//eskiden yazdırdığım bir metoddan geliyor
+        computer.resetHand();//nedenini bilmiyorum ama bu metodu kaldırdığımda 8 kart veriyor.
         for (int i = 0; i < 4; i++) {
             player.addToHand(decks.drawCard());
             computer.addToHand2(decks.drawCard());
         }
     }
 
-    private static void playerTurn(Decks decks, Players player, Players computer, Scanner sc) {
+    private static int playerTurn(Decks decks, Players player, Players computer, Scanner scanner) {
         System.out.println("Oyuncunun sırası!");
         System.out.println("0 - Kart çek");
         System.out.println("1 - Kart oyna");
         System.out.println("2 - Seti bitir");
 
-        int choice = sc.nextInt();
-        sc.nextLine(); // Buffer temizleme
+        int userChoice = -1; // Başta geçersiz bir seçenek atadım
 
-        switch (choice) {
-            case 0:
-                String drawnCard = decks.drawCard();
-                if (drawnCard != null) {
-                    System.out.println("Çekilen kart: " + drawnCard);
-                    player.addToHand(drawnCard);
-                } else {
-                    System.out.println("Destede kart kalmadı!");
+        while (true) {
+            try {
+                userChoice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (userChoice) {
+                    case 0:
+                        String drawnCard = decks.drawCard();
+                        if (drawnCard != null) {
+                            System.out.println("Çekilen kart: " + drawnCard);
+                            player.addToHand(drawnCard);
+                        } else {
+                            System.out.println("Destede kart kalmadı!");
+                        }
+                        break;
+                    case 1:
+                        player.printHandWithIndices();
+                        System.out.println("Hangi kartı oynamak istiyorsunuz?");
+                        int cardIndex = scanner.nextInt();
+                        player.placeCardOnTable(cardIndex - 1);
+                        break;
+                    case 2:
+                        System.out.println("Seti bitir!");
+
+                        // Masadaki kartları karşılaştır
+                        player.compareTable(computer, userChoice);
+
+                        dealInitialHands(decks, player, computer); // Yeni tur.
+                        break;
+                    default:
+                        System.out.println("Geçersiz seçim! Tekrar deneyin.");
+                        continue; // Geçersiz seçim durumunda tekrar döngüye devam et
                 }
-                break;
-            case 1:
-                player.printHandWithIndices();
-                System.out.println("Hangi kartı oynamak istiyorsunuz?");
-                int cardIndex = sc.nextInt();
-                player.placeCardOnTable(cardIndex - 1);
-                break;
-            case 2:
-                System.out.println("Seti bitir!");
 
-                // Masadaki kartları karşılaştır
-                player.compareTable(computer);
-                break;
-            default:
-                System.out.println("Geçersiz seçim!");
-                break;
+                break; // Geçerli bir seçim yapıldıysa döngüden çık
+            } catch (Exception e) {
+                System.out.println("Hata: Geçerli bir sayı giriniz. Tekrar deneyin.");
+                scanner.nextLine(); // Buffer temizleme
+            }
         }
+
+        return userChoice;
+        //Temel olarak bildiğiniz switch-case. Sadece diğer metodlarla olan bağlantıları
+        // ayarlamak zor oldu try-catch kullanmayı araştırarak ekledim
     }
+
 
     private static void computerTurn(Decks decks, Players player, Players computer) {
         System.out.println("Bilgisayarın sırası!");
 
-        // Bilgisayarın elinden bir kartı masaya koymasını sağla
+        // Bilgisayarın elinden bir kartı masaya koymasını sağlama
         String drawnCard = decks.drawCard();
-        if (drawnCard != null) {
+        Random random=new Random();
+        int a =random.nextInt(2);
+        if (a==1){
+        //if (drawnCard != null) {
             System.out.println("Bilgisayar masaya kart koydu: " + drawnCard);
             computer.addToTable2(drawnCard);
         } else {
-            System.out.println("Destede kart kalmadı!");
+            computer.addToHand2(drawnCard);
+            //System.out.println("Destede kart kalmadı");
+            System.out.println("Bilgisayar kart çekti");
         }
 
         // Masadaki kartları karşılaştır
-        //computer.compareTable(player);
+        //computer.compareTable(player);Bunları deneme amaçlı açtım sonra gizledim
     }
-
 
     private static boolean checkGameResult(Players player, Players computer) {
         if (player.totalScore == 3) {
             System.out.println("Oyuncu oyunu kazandı!");
             return true;
-        } else if (computer.totalScore2== 3) {
+        } else if (computer.totalScore2 == 3) {
             System.out.println("Bilgisayar oyunu kazandı!");
             return true;
         }
