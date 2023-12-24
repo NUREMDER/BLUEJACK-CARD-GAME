@@ -1,14 +1,15 @@
 import java.util.Arrays;
 import java.util.Scanner;
 
-public class Players {
+public class Players {//Constructor kısaca.
     private String[] hand;
     public int totalScore;
     public int totalScore2;
     private String[] table;
     private String[] hand2;
     private String[] table2;
-
+    //Burayı sağlam anlamak için yanında 2 olan her şeyin bilgisayar ait olduğunu
+    // kalanların oyuncuya ait olduğunu başta söylemek isterim
     public Players() {
         hand = new String[9];
         totalScore = 0;
@@ -21,25 +22,25 @@ public class Players {
         return hand;
     }
 
-    public void placeCardOnTable(int index) {
+    public String placeCardOnTable(int index) {
         if (index < 0 || index >= hand.length || hand[index] == null) {
             System.out.println("Geçersiz bir kart seçtiniz.");
             while (true) {
-                try {
+                try {//Burada da try-catch gerekti.
                     System.out.println("Lütfen geçerli bir kart seçin:");
                     Scanner sc = new Scanner(System.in);
                     int newIndex = sc.nextInt();
 
-                    // Yeni seçilen kartın geçerli olup olmadığını kontrol et
+                    // Yeni seçilen kartın geçerli olup olmadığını kontrol etmek için
                     if (newIndex >= 1 && newIndex <= hand.length && hand[newIndex - 1] != null) {
                         addToTable(hand[newIndex - 1]);
                         System.out.println("Masaya koyulan kart: " + hand[newIndex - 1]);
                         removeFromHand(newIndex - 1);
-                        break; // Geçerli bir kart seçildiği için döngüyü sonlandır
+                        return hand[newIndex - 1]; // Masaya konan kartın kendisini döndür
                     } else {
                         System.out.println("Hata: Geçerli bir kart seçiniz.");
                     }
-                } catch (Exception e) {
+                } catch (Exception exception) {
                     System.out.println("Hata: Geçerli bir sayı giriniz.");
                 }
             }
@@ -47,14 +48,12 @@ public class Players {
             addToTable(hand[index]);
             System.out.println("Masaya koyulan kart: " + hand[index]);
             removeFromHand(index);
+            return hand[index]; // Masaya konan kartın kendisini döndür
         }
     }
 
-    public void endSet() {
-        // Turu bitir, gerekirse ekstra kontrolleri burada ekleyebilirsiniz
-    }
 
-    public void addToHand(String card) {
+    public void addToHand(String card) {//Bize kart ekleyen metodum
         for (int i = 0; i < hand.length; i++) {
             if (hand[i] == null) {
                 hand[i] = card;
@@ -63,13 +62,13 @@ public class Players {
         }
     }
 
-    public void removeFromHand(int index) {
+    public void removeFromHand(int index) {//Oynanan kartı elden çıkaran metod mük. Nulluyor.
         if (index >= 0 && index < hand.length) {
             hand[index] = null;
         }
     }
 
-    public void printHandWithIndices() {
+    public void printHandWithIndices() {//Eldeki kartları indeksleriyle beraber ekrana yazdırıyor.
         System.out.print("Oyuncu eli: [");
         for (int i = 0; i < hand.length; i++) {
             if (hand[i] != null) {
@@ -81,11 +80,8 @@ public class Players {
         System.out.println("]");
     }
 
-    public String[] getHand2() {
-        return hand2;
-    }
 
-    public void addToHand2(String card) {
+    public void addToHand2(String card) {//Bilgisayara kart ekleyen metodum
         for (int i = 0; i < hand2.length; i++) {
             if (hand2[i] == null) {
                 hand2[i] = card;
@@ -94,7 +90,7 @@ public class Players {
         }
     }
 
-    public void addToTable(String card) {
+    public void addToTable(String card) {//Bizim masa
         for (int i = 0; i < table.length; i++) {
             if (table[i] == null) {
                 table[i] = card;
@@ -102,7 +98,7 @@ public class Players {
             }
         }
     }
-    public void addToTable2(String card) {
+    public void addToTable2(String card) {//Bilgisayarın masaya ekleme sağlama
         for (int i = 0; i < table2.length; i++) {
             if (table2[i] == null) {
                 table2[i] = card;
@@ -111,13 +107,17 @@ public class Players {
         }
     }
 
-    public void compareTable(Players computer) {
+    public void compareTable(Players computer, int userChoice) {
+    //Masadaki kartları karşılaştırma ve set skorunu hesaplama burada oldu bu kısımla case 2'nin
+        // önemli bir bağlantısı var Seti bitir girersek eğer ancak öyle skor hesabı yapıyor.
+        // Bu kısım ciddi manada çok uğraştırdı.
         int playerTotal = calculateTotal(table);
         int computerTotal = calculateTotal(computer.getTable2());
 
         System.out.println("Oyuncu masası: " + Arrays.toString(table));
         System.out.println("Bilgisayar masası: " + Arrays.toString(computer.getTable2()));
 
+        if(userChoice==2){
 
         if (playerTotal > computerTotal && playerTotal <= 20) {
             System.out.println("Oyuncu bu seti kazandı!");
@@ -128,22 +128,53 @@ public class Players {
         } else {
             System.out.println("Bu set berabere!");
         }
-      }
+        }else{
+            System.out.println("-----------------------------------");
+        }
+    }
 
 
     public String[] getTable2() {
         return table2;
     }
 
+    public void endSet() {
+        Arrays.fill(table, null);
+        Arrays.fill(table2, null);
+    //Bu iki metodun aynı olduğunun farkındayım birini önceden yazıp unutmuştum
+    }
+    public void resetHand() {//Sonra fark ettim ama kaldırdığım zaman oyun 8 kart veriyordu.
+                             // Zamanım azaldığı için kod çalışıyorsa elleme mekanizmasını kullandım:)
+        Arrays.fill(hand, null);
+        Arrays.fill(hand2, null);
+    }
+
+
 
     private int calculateTotal(String[] cards) {
         int total = 0;
-        for (String card : cards) {
-            if (card != null) {
-                // Kartın içindeki işareti temizle
+        int lastCardValue = 0;
+
+        for (String card : cards) {//Bu kısım for-each kartlara bakınıyor.
+            if (card != null) {//Null değilse buraya geliyor
+                // Kartın içindeki işareti temizleme
                 String valueString = card.replaceAll("[^0-9-]", "");
-                int value = Integer.parseInt(valueString);
-                total += value;
+
+                if (!valueString.isEmpty()) {  // Boş bir string değilse devam et
+                    int value = Integer.parseInt(valueString);
+
+                    if (card.startsWith(GameController.FLIP_CARD)) {
+                        // Flip kartı varsa, masaya konan kartların değerlerini tersine çevir
+                        value *= -1;
+                    } else if (card.startsWith(GameController.DOUBLE_CARD)) {
+                        // Double kartı varsa, masaya konan kartların değerlerini iki katına çıkar
+                        value *= 2;
+                    }//Özel kartların mekanizmasını oluşturmaya çalıştım ama tam başarabiliğim
+                    // söylenemez en azından doğru bir mantık çerçevesine sahip olduğumu düşünüyorum.
+
+                    lastCardValue = value;
+                    total += value;
+                }
             }
         }
         return total;
@@ -162,6 +193,7 @@ public class Players {
         System.out.println("Bilgisayar eli: " + Arrays.toString(hand2));
         // Bilgisayar turunu bitir
         endSet();
-
+    //Bilgisayar için bir strateji izlemek istedim ama başarısız oldum
+        // ve metodu işlevsiz bıraktım silmek istemedim son ana kadar.
     }
 }
