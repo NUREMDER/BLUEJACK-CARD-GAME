@@ -194,6 +194,14 @@ public class Players {//Constructor kısaca.
         // Bilgisayar turunu bitir
         endSet();
     //Bilgisayar için bir strateji izlemek istedim ama başarısız oldum
-        // ve metodu işlevsiz bıraktım silmek istemedim son ana kadar.
+        // ve metodu işlevsiz bıraktım silmek istemedim.
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public int getTotalScore2() {
+        return totalScore2;
     }
 }
