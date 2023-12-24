@@ -6,12 +6,12 @@ public class Decks {
     public Decks() {
         initializeDeck();
     }
-
+    //Raporda detaylı bahsettim
     private void initializeDeck() {
         String[] colors = {GameController.MAVI, GameController.SARI, GameController.KIRMIZI, GameController.YESIL};
         String[] numbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
 
-        cards = new String[colors.length * numbers.length + 6]; // Ekstra 6 kart eklendi
+        cards = new String[colors.length * numbers.length + 6]; // Ekstra 6 kart özeller için eklemek gerekti
 
         int index = 0;
         for (int i = 0; i < colors.length; i++) {
@@ -21,8 +21,7 @@ public class Decks {
                 cards[index++] = card;
             }
         }
-
-        // Ekstra kartlar ekleniyor
+        // Özel kartları indekslere eklemek için
         cards[index++] = GameController.FLIP_CARD;
         cards[index++] = GameController.FLIP_CARD;
         cards[index++] = GameController.DOUBLE_CARD;
@@ -32,26 +31,37 @@ public class Decks {
     }
 
     private String addRandomSign(String card) {
-        // Randomly choose between + and -
+        // Math random kartlara rastgele -,+ verecek burayı böyle yapma nedenim
+        // teorik olarak %50 +,%50 - gelecek olması ve kolay gedliği için böyle yaptım.
         String sign = (Math.random() < 0.5) ? "+" : "-";
         return sign + card;
     }
 
+
     public String drawCard() {
-        if (cards.length > 0) {
+        if (cards.length == 0) {
+            // Destede kart kalmadı, desteyi yeniden karıştır
+            reshuffleCards();
+        }
+
+        while (cards.length > 0) {
             String drawnCard = cards[0];
 
-            String[] newCards = new String[cards.length - 1];
-            System.arraycopy(cards, 1, newCards, 0, newCards.length);
+            if (drawnCard != null) {
+                String[] newCards = new String[cards.length - 1];
+                System.arraycopy(cards, 1, newCards, 0, newCards.length);
 
-            cards = newCards;
+                cards = newCards;
 
-            return drawnCard.charAt(0) + drawnCard.substring(1);
-        } else {
-            return null;
+                return drawnCard.charAt(0) + drawnCard.substring(1);
+            } else {
+                // Eğer çekilen kart null ise, tekrar çekmeyi dene
+                reshuffleCards();
+            }
         }
+        return null;
     }
-
+    //Raporda detaylı bahsettim
     private void shuffle(String[] cards) {
         Random rand = new Random();
 
@@ -61,5 +71,9 @@ public class Decks {
             cards[i] = cards[randomIndex];
             cards[randomIndex] = temp;
         }
+    }//yeni turlarda buraya gelip yeniden yeni kart destesi oluşturup karıştırıyorum
+    public void reshuffleCards() {
+        initializeDeck();
+        shuffle(cards);
     }
 }
