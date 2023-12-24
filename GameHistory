@@ -1,0 +1,25 @@
+
+public class GameHistory {
+    private String[] history;
+    private int currentIndex;
+
+    public GameHistory() {
+        history = new String[10];
+        currentIndex = 0;
+    }
+
+    public void addGameResult(String playerName, int playerScore, int computerScore, String date) {
+        String gameResult = playerName + ":" + playerScore + " - Bilgisayar:" + computerScore + ", " + date;
+        history[currentIndex % 10] = gameResult;
+        currentIndex++;
+    }
+
+    public void printGameHistory() {
+        for (String gameResult : history) {
+            if (gameResult != null) {
+                System.out.println(gameResult);
+            }
+        }
+    }
+}
+
